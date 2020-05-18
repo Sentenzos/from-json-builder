@@ -1,38 +1,36 @@
-.App {
-  text-align: center;
+.component {
+  padding: 10rem;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
+/*.modal-window {*/
+/*  display: grid;*/
+/*  grid-auto-flow: row;*/
+/*  margin: 10rem;*/
+/*  width: 15rem;*/
+/*}*/
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
+/*.ant-tabs-content {*/
+/*  height: 320px;*/
+/*  overflow-y: auto;*/
+/*}*/
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
+/*.ant-input-number {*/
+/*  width: 100% !important;*/
+/*}*/
 
-.App-link {
-  color: #61dafb;
-}
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+
+/*.tab__content-wrapper {*/
+/*  height: 100%;*/
+/*  overflow-y: auto;*/
+/*  overflow-x: hidden;*/
+/*}*/
+
+
+/*.ant-card {*/
+/*  margin-top: 16px !important;*/
+/*}*/
+
+/*.ant-card {*/
+/*  padding: 0;*/
+/*}*/
