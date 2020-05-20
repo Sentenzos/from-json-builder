@@ -34,3 +34,13 @@
 /*.ant-card {*/
 /*  padding: 0;*/
 /*}*/
+
+.panel__btns {
+  margin-top: 0.5rem;
+  /*display: flex;*/
+  /*justify-content: flex-end;*/
+}
+
+.panel__delete-btn {
+  margin-right: 0.5rem;
+}

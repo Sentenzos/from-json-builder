@@ -1,7 +1,9 @@
 import {Checkbox, Col, DatePicker, Input, InputNumber, Row, Select, Tooltip} from "antd/lib/index";
 import moment from "moment/moment";
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {InfoCircleOutlined} from "@ant-design/icons";
+import setImmutable from "../js/setImmutable";
+import filterObject from "../js/filterObject";
 
 
 const Control = (props) => {
@@ -14,9 +16,39 @@ const Control = (props) => {
     options && "" || defaultValue
   );
 
+  //добавить defaultValue из элемента в объект reflectionData при его монтировании
+  useEffect(() => {
+    props.setReflectionData((draft) => {
+      return setImmutable(draft, props.path, defaultValue);
+    });
+  }, []);
+
+  ////добавить value из элемента в объект reflectionData при его монтировании
+  // useEffect(() => {
+  //   props.setReflectionData((draft) => {
+  //     return setImmutable(draft, props.path, value);
+  //   });
+  // }, [props.mainData]);
+
+
+  //В выходном объекте очищает данные элементов со свойством visible,
+  //если они были размонтированы
+  useEffect(() => {
+    return () => {
+      props.setOutputData((draft) => {
+        return setImmutable(draft, props.path, undefined);
+      });
+      props.setReflectionData((draft) => {
+        return filterObject(
+          setImmutable(draft, props.path, undefined)
+        );
+      });
+    }
+  }, []);
+
 
   const handleStrInput = useCallback((e) => {
-    const val = e.target.value;
+    const val = e.target.value || null;
     setData(val);
   }, []);
 
@@ -30,7 +62,7 @@ const Control = (props) => {
   }, []);
 
   const handleDatePicker = useCallback((momentObj) => {
-    const val = momentObj ? moment(momentObj).format(dateFormat) : undefined;
+    const val = momentObj ? moment(momentObj).format(dateFormat) : null;
     setData(val);
   }, []);
 
@@ -38,29 +70,27 @@ const Control = (props) => {
     setData(data);
   }, []);
 
+
   const setData = useCallback((data) => {
 
-
     setValue(data);
-
-    //если родитель массив
-    if (Array.isArray(props.obj)) {
-      props.obj[props.order] = {
-        [id]: data
-      };
-
-      if (props.obj[props.order][id] === defaultValue) {
-        props.obj.splice(props.order, 1);
-      }
-        //если родитель объект
+    //Установить значение на undefined (далее произойдет очистка свойств с undefined значениями).
+    //Вторая часть условия необходима, так как control (если затереть поле) возвращает разные типы данных.
+    if (defaultValue === data || (defaultValue === undefined && data === null)) {
+      props.setOutputData((draft) => {
+        return setImmutable(draft, props.path, undefined);
+      });
     } else {
-      props.obj[props.objProp] = data;
-
-      if (props.obj[props.objProp] === defaultValue) {
-        delete props.obj[props.objProp]
-      }
+      props.setOutputData((draft) => {
+        return setImmutable(draft, props.path, data);
+      });
     }
-  }, [id, defaultValue]);
+
+    props.setReflectionData((draft) => {
+      return setImmutable(draft, props.path, data);
+    });
+
+  }, [defaultValue, props.path]);
 
 
   let control;
@@ -90,7 +120,7 @@ const Control = (props) => {
       break;
 
     case "date":
-      const date = value ? moment(value, dateFormat) : undefined;
+      const date = value ? moment(value, dateFormat) : null;
       control = <DatePicker name={id}
                             value={date}
                             onChange={handleDatePicker}
@@ -128,7 +158,7 @@ const Control = (props) => {
           props.hint &&
           <span>
             <Tooltip title={props.hint}>
-              <InfoCircleOutlined style={{cursor: "pointer"}} />
+              <InfoCircleOutlined style={{cursor: "pointer"}}/>
             </Tooltip>
           </span>
         }
