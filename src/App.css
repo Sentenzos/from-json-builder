@@ -44,3 +44,7 @@
 .panel__delete-btn {
   margin-right: 0.5rem;
 }
+
+.is-required {
+  color: #ff0000;
+}

@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from "react";
+import React, {useCallback, useMemo, useState} from "react";
 import "./App.css";
 import {Button, Modal, Tabs} from "antd";
 import "antd/dist/antd.css"
@@ -34,6 +34,7 @@ const dataJSON = [
               "id": "firstName",
               "caption": "Name",
               "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+              "required": true,
               "defaultValue": "Alex"
             }
           },
@@ -43,7 +44,7 @@ const dataJSON = [
               "type": "number",
               "id": "age",
               "caption": "Age",
-              "defaultValue": 15
+              "defaultValue": 16
             }
           },
         ]
@@ -83,7 +84,7 @@ const dataJSON = [
           "caption": "Имя панели",
           "id": "h2",
           "condVisibility": {
-            "mode": "visible",
+            "mode": "invisible",
             "path": "general.h1.0.age",
             "value": 16
           }
@@ -143,26 +144,36 @@ const dataJSON = [
           },
         ]
       },
-      // {
-      //   "type": "control",
-      //   "props": {
-      //     "type": "select",
-      //     "id": "cities",
-      //     "visible": false,
-      //     "condVisible": {
-      //       "path": "general.h1.0.age",
-      //       "value": 16
-      //     },
-      //     "caption": "Country",
-      //     "defaultValue": "omsk",
-      //     "options": [
-      //       {"msc": "Moscow"},
-      //       {"spb": "Saint Petersburg"},
-      //       {"omsk": "Omsk"},
-      //       {"chel": "Chelyabinsk"}
-      //     ]
-      //   }
-      // },
+      {
+        "type": "control",
+        "props": {
+          "type": "select",
+          "id": "cities",
+          "condVisibility": {
+            "mode": "invisible",
+            "path": "general.h1.1.age",
+            "value": 17
+          },
+          "caption": "Country",
+          "defaultValue": "omsk",
+          "options": [
+            {"msc": "Moscow"},
+            {"spb": "Saint Petersburg"},
+            {"omsk": "Omsk"},
+            {"chel": "Chelyabinsk"}
+          ]
+        }
+      },
+      {
+        "type": "control",
+        "props": {
+          "type": "string",
+          "id": "empty",
+          "caption": "Empty",
+          "required": true
+          // "defaultValue": "omsk",
+        }
+      },
     ]
   },
 
@@ -317,6 +328,36 @@ const dataJSON = [
           "defaultValue": "Smith"
         }
       },
+      {
+        "type": "panel",
+        "props": {
+          "caption": "Имя панели",
+          "id": "h1",
+          "multiple": true
+        },
+        "content": [
+          {
+            "type": "control",
+            "props": {
+              "type": "string",
+              "id": "firstName",
+              "caption": "Name",
+              "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+              "required": true,
+              "defaultValue": "Alex"
+            }
+          },
+          {
+            "type": "control",
+            "props": {
+              "type": "number",
+              "id": "age",
+              "caption": "Age",
+              "defaultValue": 16
+            }
+          },
+        ]
+      },
     ]
   },
 
@@ -390,7 +431,7 @@ const dataJSON = [
 ];
 
 
-const App = (props) => {
+const ModalWindow = (props) => {
   //Объект с входными данными по которым строится интерфейс.
   const [mainData, setMainData] = useState(deepClone(dataJSON));
   //Объект для вывода. Содержащий только измененные данные.
@@ -398,8 +439,9 @@ const App = (props) => {
   //Объект для отслеживания видимости. Содержит все данные полей.
   const [reflectionData, setReflectionData] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
+  //Массив содержащий элементы controls со свойством required.
+  const [requiredControls, setRequiredControls] = useState([]);
 
-  window.mainData = mainData;
 
   const createElement = (array, outputPanelPath = '', outputControlPath = '', mainPath = '') => {
     return array.map((elem, i) => {
@@ -421,10 +463,12 @@ const App = (props) => {
                          setOutputData={setOutputData}
                          setReflectionData={setReflectionData}
                          isLast={isLast}
-                         isRemovable={isLast && i}
+                         //если элемент последний (и multiple) и перед ним элемент с таким же id
+                         isRemovable={isLast && array[i - 1]?.props?.id === array[i].props.id}
                          mainData={mainData}
                          setMainData={setMainData}
                          mainPath={`${mainPath}${elem.props.multiple ? `.${i}` : ""}`}
+                         setRequiredControls={setRequiredControls}
         />
       }
 
@@ -435,6 +479,7 @@ const App = (props) => {
                            setOutputData={setOutputData}
                            setReflectionData={setReflectionData}
                            mainData={mainData}
+                           setRequiredControls={setRequiredControls}
         />;
       }
 
@@ -477,6 +522,26 @@ const App = (props) => {
     return createElement(mainData);
   }, [reflectionData, mainData]);
 
+  const handleOkBtn = useCallback(() => {
+    let clone = deepClone(outputData);
+    // console.log(reflectionData);
+    console.log(filterObject(clone) || {});
+  }, [outputData,
+    // reflectionData
+  ]) ;
+
+  const handleCancelBtn = useCallback(() => {
+    setModalVisible(false);
+    setMainData(deepClone(dataJSON));
+  }, []);
+
+  const bodyStyle = useMemo(() => {
+    return {
+      height: "400px",
+      padding: "0 20px 20px 20px",
+      overflowY: "auto"
+    }
+  }, []);
 
   return (
     <div className="component">
@@ -484,19 +549,19 @@ const App = (props) => {
 
       <Modal visible={modalVisible}
              title="Имя модального окна"
-             bodyStyle={{height: "400px", padding: "0 20px 20px 20px", overflowY: "auto"}}
+             bodyStyle={bodyStyle}
              width={700}
              centered={true}
-             onCancel={() => setModalVisible(false)}
-             onOk={() => {
-               let clone = deepClone(outputData);
-               console.log(reflectionData);
-               console.log(filterObject(clone) || {});
-             }}
+             destroyOnClose={true}
+             onCancel={handleCancelBtn}
+             onOk={handleOkBtn}
+             okButtonProps={{disabled: requiredControls.find(i => i.value === null || i.value === undefined || i.value === "")}}
       >
         {
           tabContent.length &&
-          <Tabs defaultActiveKey={1}>
+          <Tabs defaultActiveKey={1}
+                // destroyInactiveTabPane={true}
+          >
             {tabContent}
           </Tabs>
         }
@@ -509,4 +574,4 @@ const App = (props) => {
 };
 
 
-export default App;
+export default ModalWindow;

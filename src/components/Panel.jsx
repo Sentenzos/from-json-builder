@@ -4,6 +4,7 @@ import Control from "./Control";
 import deepClone from "../js/deepClone";
 import getFromPath from "../js/getFromPath";
 import setImmutable from "../js/setImmutable";
+import addByIndex from "../js/addByIndex";
 
 
 const Panel = React.memo((props) => {
@@ -34,29 +35,19 @@ const Panel = React.memo((props) => {
     }
 
     props.setMainData(mainData => {
-      // //Создание клона mainData
-      // const mainDataClone = deepClone(mainData);
-      // //Извлечение ссылки на массив объектов
-      // const [obj, key] = getFromPath(path, mainDataClone);
-      //
-      // setImmutable(obj, path, value)
-      //
-      // //Вставка склонированного объекта panel в массив
-      // if (mode === "adding") {
-      //   obj[key].splice(index, 0, panelClone);
-      // }
-      // //Удаление объека panel по индексу
-      // if (mode === "deleting") {
-      //   obj[key].splice(index, 1);
-      // }
-      //
-      // //Возврат отредактированного клона входных данных
-      // return mainDataClone;
-
+      //Извлечение ссылки на массив объектов
       const [obj, key] = getFromPath(path, props.mainData);
-      return setImmutable(mainData, path, setByIndex(obj[key], panelClone, index));
-      // console.log(path)
-      // return mainData
+
+      if (mode === "adding") {
+        return setImmutable(mainData, path,
+          //вернет поверхностную копию массива obj[key] с новым элементом panelClone по индексу index
+          addByIndex(obj[key], panelClone, index));
+      }
+
+      if (mode === "deleting") {
+        return setImmutable(mainData, path,
+          [...obj[key].filter((_, ind) => ind !== index)]);
+      }
     })
   }, [props.mainPath, props.mainData]);
 
@@ -71,13 +62,6 @@ const Panel = React.memo((props) => {
   }, [addRemoveUnited]);
 
 
-
-
-  //Возвращает поверхностную копию arr в которую помещает value по index.
-  const setByIndex = (arr, value, index) => {
-    return [...arr.map((i, ind) => ind < index && i).filter(i => i), value, ...arr.map((i, ind) => ind >= index && i).filter(i => i)];
-  };
-
   return (
     <React.Fragment>
       <Card title={props.caption} size="small"
@@ -87,13 +71,15 @@ const Panel = React.memo((props) => {
           props.content.map((item, i) => {
             if (item.type === "control") {
               return (
-                <Control {...item.props} key={i}
+                <Control {...item.props}
+                         key={`${item.type}.${item.props.id}`}
                          path={`${props.path}.${item.props.id}`}
                          setOutputData={props.setOutputData}
                          outputData={props.outputData}
                          setReflectionData={props.setReflectionData}
                          setControls={props.setControls}
                          mainData={props.mainData}
+                         setRequiredControls={props.setRequiredControls}
                 />
               )
             }

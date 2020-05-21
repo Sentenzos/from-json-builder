@@ -16,35 +16,40 @@ const Control = (props) => {
     options && "" || defaultValue
   );
 
-  //добавить defaultValue из элемента в объект reflectionData при его монтировании
   useEffect(() => {
+    //Записывает defaultValue из элемента в объект reflectionData при его монтировании
     props.setReflectionData((draft) => {
       return setImmutable(draft, props.path, defaultValue);
     });
+    //Добавляет объект в массив содержащий элементы controls со свойством required.
+    if (props.required) {
+      props.setRequiredControls((arr) => {
+        return [...arr, {path: props.path, value}]
+      });
+    }
   }, []);
 
-  ////добавить value из элемента в объект reflectionData при его монтировании
-  // useEffect(() => {
-  //   props.setReflectionData((draft) => {
-  //     return setImmutable(draft, props.path, value);
-  //   });
-  // }, [props.mainData]);
-
-
-  //В выходном объекте очищает данные элементов со свойством visible,
-  //если они были размонтированы
   useEffect(() => {
     return () => {
+      //В выходном объекте очищает данные, если они были размонтированы.
       props.setOutputData((draft) => {
         return setImmutable(draft, props.path, undefined);
       });
+      //Очищает данные в объекте содержащем все данные полей
       props.setReflectionData((draft) => {
         return filterObject(
           setImmutable(draft, props.path, undefined)
         );
       });
+      //Удаляет объект из массива содержащего элементы controls
+      //со свойством required.
+      if (props.required) {
+        props.setRequiredControls((arr) => {
+          return [...arr.filter(i => i.path !== props.path)]
+        });
+      }
     }
-  }, []);
+  }, [props.path]);
 
 
   const handleStrInput = useCallback((e) => {
@@ -90,8 +95,12 @@ const Control = (props) => {
       return setImmutable(draft, props.path, data);
     });
 
-  }, [defaultValue, props.path]);
-
+    if (props.required) {
+      props.setRequiredControls((arr) => {
+        return [...arr.map(i => i.path === props.path ? {path: props.path, value: data} : i)]
+      });
+    }
+  }, [defaultValue, props.path, props.required]);
 
   let control;
 
@@ -153,7 +162,12 @@ const Control = (props) => {
   return (
     <Row gutter={[8, 0]} style={{marginTop: "8px", alignItems: "center", width: "100%"}}>
       <Col span={12} style={{justifyContent: "space-between", display: "flex"}}>
-        <span>{props.caption}</span>
+        <span>
+          {props.caption}
+          {
+            props.required && <span className="is-required"> *</span>
+          }
+        </span>
         {
           props.hint &&
           <span>
