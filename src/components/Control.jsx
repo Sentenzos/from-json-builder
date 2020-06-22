@@ -1,45 +1,74 @@
-import {Checkbox, Col, DatePicker, Input, InputNumber, Row, Select, Tooltip} from "antd/lib/index";
+import {Checkbox, DatePicker, Input, InputNumber, Select, Tooltip} from "antd/lib/index";
 import moment from "moment/moment";
-import React, {useCallback, useEffect, useState} from "react";
-import {InfoCircleOutlined} from "@ant-design/icons";
-import setImmutable from "../js/setImmutable";
-import filterObject from "../js/filterObject";
+import React, {useCallback, useEffect, useState, useMemo} from "react";
+import setImmutable from "../js/common/setImmutable";
+import filterObject from "../js/common/filterObject";
+import "../styles.css";
+import getFromPath from "../js/common/getFromPath";
+import deepClone from "../js/common/deepClone";
+import checkArrayElems from "../js/checkArrayElems";
 
 
-const Control = (props) => {
+
+const Control = React.memo((props) => {
   const {type, defaultValue, id, options} = props;
   const dateFormat = 'YYYY-MM-DD';
-  const [value, setValue] = useState(
-    //Проверка на options. Если true, значит элемент select
-    //и value необходимо задать особым образом
-    options && defaultValue && Object.keys(options.find(i => i[defaultValue]))[0] ||
-    options && "" || defaultValue
-  );
+  const [receivedData, receivedKey] = useMemo(() => {
+    return getFromPath(props.path, props.predefinedData);
+  }, [props.path, props.predefinedData]);
+
+  const [value, setValue] = useState(() => {
+    if (receivedData?.[receivedKey] !== undefined) return receivedData[receivedKey];
+    //Если true, значит элемент select и value необходимо задать особым образом
+    if (options && defaultValue) {
+      return defaultValue
+    }
+    // if (options && defaultValue) {
+    //   return Object.keys(options.find(i => i[defaultValue]))[0]
+    // }
+
+    if (options && !defaultValue) {
+      if (props.multipleOptions) {
+        return []
+      } else {
+        return null;
+      }
+    }
+
+    return defaultValue;
+    // options && defaultValue && Object.keys(options.find(i => i[defaultValue]))[0] ||
+    // options && "" || defaultValue
+    });
+
+
+
 
   useEffect(() => {
-    //Записывает defaultValue из элемента в объект reflectionData при его монтировании
-    props.setReflectionData((draft) => {
-      return setImmutable(draft, props.path, defaultValue);
+    props.setOutputData((outputData) => {
+      return setImmutable(outputData, props.path, value !== defaultValue ? value : undefined);
     });
-    //Добавляет объект в массив содержащий элементы controls со свойством required.
+
+    props.setReflectionData((reflectionData) => {
+      return setImmutable(reflectionData, props.path,
+        value === undefined || (Array.isArray(value) && !value[0]) ? null : value);
+    });
+
     if (props.required) {
       props.setRequiredControls((arr) => {
         return [...arr, {path: props.path, value}]
       });
     }
-  }, []);
 
-  useEffect(() => {
     return () => {
       //В выходном объекте очищает данные, если они были размонтированы.
-      props.setOutputData((draft) => {
-        return setImmutable(draft, props.path, undefined);
+      props.setOutputData((outputData) => {
+        return setImmutable(outputData, props.path, undefined)
       });
       //Очищает данные в объекте содержащем все данные полей
-      props.setReflectionData((draft) => {
-        return filterObject(
-          setImmutable(draft, props.path, undefined)
-        );
+      props.setReflectionData((reflectionData) => {
+        // return filterObject(
+          return setImmutable(reflectionData, props.path, undefined)
+        // );
       });
       //Удаляет объект из массива содержащего элементы controls
       //со свойством required.
@@ -48,51 +77,37 @@ const Control = (props) => {
           return [...arr.filter(i => i.path !== props.path)]
         });
       }
+
+      if (receivedData?.[receivedKey] !== undefined) {
+        props.setPredefinedData((data) => {
+          return setImmutable(data, props.path, undefined)
+        });
+      }
     }
   }, [props.path]);
 
 
-  const handleStrInput = useCallback((e) => {
-    const val = e.target.value || null;
-    setData(val);
-  }, []);
-
-  const handleNumInput = useCallback((data) => {
-    setData(data);
-  }, []);
-
-  const handleCheckbox = useCallback((e) => {
-    const val = e.target.checked;
-    setData(val);
-  }, []);
-
-  const handleDatePicker = useCallback((momentObj) => {
-    const val = momentObj ? moment(momentObj).format(dateFormat) : null;
-    setData(val);
-  }, []);
-
-  const handleSelect = useCallback((data) => {
-    setData(data);
-  }, []);
-
-
   const setData = useCallback((data) => {
-
     setValue(data);
+    //Если это select с multipleOptions и у него не выбрана ни одна опция, то сброс на null для корректного
+    //отображения.
+    if (Array.isArray(data) && !data[0]) data = null;
     //Установить значение на undefined (далее произойдет очистка свойств с undefined значениями).
-    //Вторая часть условия необходима, так как control (если затереть поле) возвращает разные типы данных.
-    if (defaultValue === data || (defaultValue === undefined && data === null)) {
-      props.setOutputData((draft) => {
-        return setImmutable(draft, props.path, undefined);
+    //Вторая часть условия для select с multipleOption, чтобы сверять массив value с devaultValue.
+    //Третьяя часть условия необходима, так как control (если затереть поле) возвращает разные типы данных.
+    if (defaultValue === data || checkArrayElems(defaultValue, data) || (defaultValue === undefined && data === null)) {
+      props.setOutputData((outputData) => {
+        return setImmutable(outputData, props.path, undefined);
       });
+
     } else {
-      props.setOutputData((draft) => {
-        return setImmutable(draft, props.path, data);
+      props.setOutputData((outputData) => {
+        return setImmutable(outputData, props.path, data);
       });
     }
 
-    props.setReflectionData((draft) => {
-      return setImmutable(draft, props.path, data);
+    props.setReflectionData((reflectionData) => {
+      return setImmutable(reflectionData, props.path, data === null ? null : data);
     });
 
     if (props.required) {
@@ -102,6 +117,68 @@ const Control = (props) => {
     }
   }, [defaultValue, props.path, props.required]);
 
+
+  const handleStrInput = useCallback((e) => {
+    const val = e.target.value || null;
+    setData(val);
+  }, [setData]);
+
+  const handleNumInput = useCallback((data) => {
+    setData(data);
+  }, [setData]);
+
+  const handleCheckbox = useCallback((e) => {
+    const val = e.target.checked;
+    setData(val);
+  }, [setData]);
+
+  const handleDatePicker = useCallback((momentObj) => {
+    const val = momentObj ? moment(momentObj).format(dateFormat) : null;
+    setData(val);
+  }, [setData]);
+
+  const handleSelect = useCallback((data) => {
+    let val;
+    setData(data);
+    // if (props.withRequest) {
+    //
+    //   //API запроса берется из объекта withRequest
+    //   //
+    //   const template = {
+    //     "type": "control",
+    //     "props": {
+    //       "type": "string",
+    //       "id": "response-1",
+    //       "caption": "Ответ-1",
+    //       "defaultValue": "Madagascar",
+    //       "styles": {
+    //         "controlWidth": "300px"
+    //       },
+    //       "condVisibility": {
+    //         "mode": "visible",
+    //         "path": props.path,
+    //         "value": "msc"
+    //       },
+    //       "nextLine": true,
+    //     }
+    //   };
+    //
+    //   //отправка запроса, блокировка всех кнопок
+    //   new Promise((res) => {
+    //     setTimeout(() => res(data), 1500)
+    //   })
+    //     .then((res) => {
+    //       if (res !== "msc") return;
+    //       const [obj, key] = getFromPath(props.mainPath, props.mainData);
+    //       console.log(obj[key]);
+    //       props.setMainData((mainData) => {
+    //         return setImmutable(mainData, props.mainPath, [...obj[key], template])
+    //       })
+    //     })
+    // }
+  }, [setData, props.mainData]);
+
+
   let control;
 
   switch (type) {
@@ -109,7 +186,7 @@ const Control = (props) => {
       control = <Input name={id}
                        value={value}
                        onChange={handleStrInput}
-                       style={{width: "100%"}}
+                       style={{width: "100%", borderColor: props.required && !value && "red"}}
       />;
       break;
 
@@ -117,7 +194,7 @@ const Control = (props) => {
       control = <InputNumber name={id}
                              value={value}
                              onChange={handleNumInput}
-                             style={{width: "100%"}}
+                             style={{width: "100%", borderColor: props.required && !value && "red"}}
       />;
       break;
 
@@ -133,18 +210,23 @@ const Control = (props) => {
       control = <DatePicker name={id}
                             value={date}
                             onChange={handleDatePicker}
-                            style={{width: "100%"}}
+                            style={{width: "100%", borderColor: props.required && !value && "red"}}
       />;
       break;
 
     case "select":
       control = <Select name={id}
+                        mode={props.multipleOptions && "multiple"}
                         value={value}
                         onChange={handleSelect}
-                        style={{width: "100%"}}
+                        style={{
+                          width: "100%",
+                          borderRadius: "0.15rem",
+                          border: props.required && !value && "1px solid red"
+                        }}
       >
         {
-          options.map((item, i) => {
+          options?.map((item, i) => {
             return (
               <Select.Option value={Object.keys(item)[0]} key={i}>
                 {
@@ -160,29 +242,49 @@ const Control = (props) => {
 
 
   return (
-    <Row gutter={[8, 0]} style={{marginTop: "8px", alignItems: "center", width: "100%"}}>
-      <Col span={12} style={{justifyContent: "space-between", display: "flex"}}>
-        <span>
-          {props.caption}
-          {
-            props.required && <span className="is-required"> *</span>
-          }
-        </span>
-        {
-          props.hint &&
+    //Элемент control целиком
+    <div style={{
+      marginTop: "8px", alignItems: "center",
+      display: "flex",
+      width: props?.styles?.controlWidth || "",
+      flexDirection: props.inRow ? "column" : "row"
+    }}>
+      {
+        //Отображать название в следующих случаях
+        ((!props.onlyFirstTitle) || (props.onlyFirstTitle && props.isFirst)) &&
+        <div style={{
+          justifyContent: (props.inRow ? "center" : "space-between"),
+          display: "flex",
+          width: props?.styles?.captionWidth || (props.inRow ? "98%" : "50%"),
+          height: props?.styles?.captionHeight || (props.inRow ? "3rem" : ""),
+          alignItems: "center", textAlign: "center"
+        }}>
           <span>
+            {props.caption}
+            {
+              props.required && <span className="form-editor__isRequired"> *</span>
+            }
+          </span>
+          {
+            props.hint &&
+            <span>
             <Tooltip title={props.hint}>
-              <InfoCircleOutlined style={{cursor: "pointer"}}/>
+              <i className="form-editor__hint fas fa-info-circle"/>
             </Tooltip>
           </span>
-        }
-      </Col>
-      <Col span={12}>
+          }
+        </div>
+      }
+
+      <div style={{
+        width: props?.styles?.elemWidth || (props.inRow ? "98%" : "50%"),
+        display: "flex", justifyContent: props.inRow ? "center" : ""
+      }}>
         {control}
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
-};
+});
 
 export default Control;
 

@@ -8,6 +8,14 @@ function setImmutable(obj, path, value) {
   let i = 0;
   const length = arrPath.length - 1;
 
+  //если пути нет
+  if (length === -1) {
+    if (value === null) return null;
+    if (Array.isArray(value)) return [...value];
+    if (typeof value === "object") return {...value};
+    return value;
+  }
+
   while (i < length) {
     //если значение является массивом
     if (Array.isArray(object[arrPath[i]])) {
@@ -37,6 +45,7 @@ function setImmutable(obj, path, value) {
   if (i === length) {
     object[arrPath[i]] = value;
   }
+
 
   return copy
 }
