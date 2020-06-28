@@ -18,24 +18,24 @@ const Panel = React.memo((props) => {
 
   const elements = useMemo(() => {
     return props.createElement({
-      array: props.content, outputPath: `${props.path}.`,
-      mainPath: `${props.mainPath}.content`, isFirst: props.isFirst,
+      contentArray: props.content, outputPath: `${props.path}.`,
+      configPath: `${props.configPath}.content`, isFirst: props.isFirst,
       onlyFirstTitle: props.onlyFirstTitle, inRow: props.inRow,
       forceHideParent: setForceHide
     })
   }, [props.content, props.path,
-    props.mainPath, props.isFirst, props.onlyFirstTitle, props.inRow, props.createElement]);
+    props.configPath, props.isFirst, props.onlyFirstTitle, props.inRow, props.createElement]);
 
 
 
   //Сработает только при первом рендере компонента.
-  //Если в массиве есть элементы control чье значение берется из объекта predefinedData (предустановленные данные),
+  //Если в массиве есть элементы control чье значение берется из объекта predefinedValues (предустановленные данные),
   //то предотвратить сокрытие
   const controlWithValue = useMemo(() => {
     return elements.some((item, index) => {
       if (!item) return ;
-      if (item.props.type !== "panel") {
-        const [obj, key] = getFromPath(item.props.path, props.predefinedData);
+      if (item.props.elemType !== "panel") {
+        const [obj, key] = getFromPath(item.props.path, props.predefinedValues);
         if (!obj) return;
         if (obj[key] !== undefined) {
           return true;
@@ -49,7 +49,7 @@ const Panel = React.memo((props) => {
   const panelElem = useMemo(() => {
     return elements.some((item, index) => {
       if (!item) return;
-      return item.props.type === "panel"
+      return item.props.elemType === "panel"
     })
   }, []);
 
@@ -85,14 +85,14 @@ const Panel = React.memo((props) => {
 
   const addPanel = useCallback(() => {
     //Разбор строки path.
-    let path = props.mainPath.split('.');
+    let path = props.configPath.split('.');
     //Извлечение оттуда последнего ключа (index) и увеличение на единицу
     //для корректного добавления элемента по индексу
     let index = +path.pop() + 1;
     path = path.join('.');
 
     //Получение ссылки на данный объект panel и создание его копии.
-    const [obj, key] = getFromPath(props.mainPath, props.mainData);
+    const [obj, key] = getFromPath(props.configPath, props.configData);
     const panelClone = deepClone(obj[key]);
     //У копии должен быть сброшен keyId.
     panelClone._keyId = undefined;
@@ -101,31 +101,31 @@ const Panel = React.memo((props) => {
     //Очищает массив content (из panelClone) от элементов со свойством _copy
     deleteCopies(panelClone);
 
-    props.setMainData(mainData => {
+    props.setConfigData(configData => {
       //Извлечение ссылки на массив объектов
-      const [obj, key] = getFromPath(path, props.mainData);
+      const [obj, key] = getFromPath(path, props.configData);
       let array = key ? obj[key] : obj;
 
-      return setImmutable(mainData, path,
+      return setImmutable(configData, path,
         //вернет поверхностную копию массива obj[key] с новым элементом panelClone по индексу index
         addByIndex(array, panelClone, index));
     })
-  }, [props.mainPath, props.mainData]);
+  }, [props.configPath, props.configData]);
 
 
   const removePanel = useCallback(() => {
-    let path = props.mainPath.split('.');
+    let path = props.configPath.split('.');
     path.pop();
     path = path.join('.');
 
-    props.setMainData(mainData => {
-      const [obj, key] = getFromPath(path, props.mainData);
+    props.setConfigData(configData => {
+      const [obj, key] = getFromPath(path, props.configData);
       let array = key ? obj[key] : obj;
 
-      return setImmutable(mainData, path,
+      return setImmutable(configData, path,
         [...array.filter((item) => item._keyId !== props.keyId)]);
     })
-  }, [props.mainPath, props.mainData, props.keyId]);
+  }, [props.configPath, props.configData, props.keyId]);
 
 
   const hidePanel = useCallback(() => {
@@ -134,25 +134,25 @@ const Panel = React.memo((props) => {
 
 
   const showPanel = useCallback(() => {
-    let path = props.mainPath.split('.');
+    let path = props.configPath.split('.');
     let index = +path.pop();
     path = path.join('.');
 
-    const [obj, key] = getFromPath(props.mainPath, props.mainData);
+    const [obj, key] = getFromPath(props.configPath, props.configData);
     const panelClone = deepClone(obj[key]);
     deleteCopies(panelClone);
 
-    props.setMainData(mainData => {
-      const [obj, key] = getFromPath(path, props.mainData);
+    props.setConfigData(configData => {
+      const [obj, key] = getFromPath(path, props.configData);
       let array = key ? obj[key] : obj;
 
-      return setImmutable(mainData, path,
+      return setImmutable(configData, path,
         addByIndex([...array.filter((item) => item._keyId !== props.keyId)], panelClone, index));
     });
 
     toggleHide(false);
     setPreventHide(true);
-  }, [props.mainPath, props.mainData, props.keyId]);
+  }, [props.configPath, props.configData, props.keyId]);
 
 
   const inRowStyles = props.inRow ? {

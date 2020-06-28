@@ -4,10 +4,10 @@ import deepClone from "./common/deepClone";
 import getPaths from "./common/getPaths";
 import addByIndex from "./common/addByIndex";
 
-//В этой функции dataJSON проверяется на недостающие элементы по путям из predefinedData,
+//В этой функции dataJSON проверяется на недостающие элементы по путям из predefinedValues,
 //и если какого-то элемента недостает, то он добавляется.
-const addMissingElements = (dataJSON, predefinedData) => {
-  const paths = getPaths(predefinedData);
+const addMissingElements = (dataJSON, predefinedValues) => {
+  const paths = getPaths(predefinedValues);
   let copyData = deepClone(dataJSON);
   //Имена ключей содержат пути, а значения оригинальные объекты необходимые для дальнейшего копирования.
   const originalObjects = {};

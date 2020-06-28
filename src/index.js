@@ -2,8 +2,6 @@ import React, {useCallback, useState} from 'react';
 import ReactDOM from 'react-dom';
 import App from './Form.jsx';
 import * as serviceWorker from './serviceWorker';
-import deepClone from "./js/common/deepClone";
-import filterObject from "./js/common/filterObject";
 
 const config = {
   "type": "form",
@@ -14,7 +12,7 @@ const config = {
       "width": "900px",
       "height": "700px",
     },
-    "outputFormat": "entire"
+    "outputFormat": "modified"
   },
   "content": [
     {
@@ -23,7 +21,7 @@ const config = {
         "id": "one",
         "caption": "One"
       },
-      "content" :[
+      "content": [
         {
           "type": "panel",
           "props":
@@ -47,10 +45,11 @@ const config = {
                   "caption": "Первая космическая скорость",
                   "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                   // "required": true,
-                  "defaultValue": "World",
+                  // "defaultValue": "World",
                   "styles": {
                     "controlWidth": "200px"
-                  }
+                  },
+                  required: true
                 }
               },
               {
@@ -87,7 +86,7 @@ const config = {
                   },
                   "condVisibility": {
                     "mode": "invisible",
-                    "path": "h1.1.second",
+                    "path": "one.h1.1.second",
                     "value": 17
                   }
                 }
@@ -280,27 +279,18 @@ const config = {
                 ]
               },
             ]
-        }
-      ]
-    },
-    {
-      "type": "tab",
-      "props": {
-        "id": "one+",
-        "caption": "Two"
-      },
-      "content" :[
+        },
         {
           "type": "panel",
           "props":
             {
               "caption": "Имя панели",
-              "id": "h1",
+              "id": "h6",
               "multiple": true,
               // "noHeader": true,
               "inRow": true,
               "onlyFirstTitle": true,
-              // "collapsed": true,
+              "collapsed": true,
             }
           ,
           "content":
@@ -312,8 +302,8 @@ const config = {
                   "id": "first",
                   "caption": "Первая космическая скорость",
                   "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                  "required": true,
-                  // "defaultValue": "World",
+                  // "required": true,
+                  "defaultValue": "AAA",
                   "styles": {
                     "controlWidth": "200px"
                   }
@@ -546,9 +536,805 @@ const config = {
                 ]
               },
             ]
-        }
+        },
+        {
+          "type": "panel",
+          "props":
+            {
+              "caption": "Имя панели",
+              "id": "h7",
+              "multiple": true,
+              // "noHeader": true,
+              "inRow": true,
+              "onlyFirstTitle": true,
+              "collapsed": true,
+            }
+          ,
+          "content":
+            [
+              {
+                "type": "control",
+                "props": {
+                  "type": "string",
+                  "id": "first",
+                  "caption": "Первая космическая скорость",
+                  "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                  // "required": true,
+                  "defaultValue": "BBB",
+                  "styles": {
+                    "controlWidth": "200px"
+                  }
+                }
+              },
+              {
+                "type": "control",
+                "props": {
+                  "type": "number",
+                  "id": "second",
+                  "caption": "Вторая",
+                  "defaultValue": 16,
+                  "styles": {
+                    "controlWidth": "120px"
+                  }
+                }
+              },
+              {
+                "type": "control",
+                "props": {
+                  "type": "select",
+                  "id": "third",
+                  "caption": "Третья",
+                  "defaultValue": ["omsk", "msc"],
+                  "withRequest": {
+                    "url": "/someURL"
+                  },
+                  "multipleOptions": true,
+                  "options": [
+                    {"msc": "Moscow"},
+                    {"spb": "Saint Petersburg"},
+                    {"omsk": "Omsk"},
+                    {"chel": "Chelyabinsk"}
+                  ],
+                  "styles": {
+                    "controlWidth": "120px"
+                  },
+                  "condVisibility": {
+                    "mode": "invisible",
+                    "path": "h1.1.second",
+                    "value": 17
+                  }
+                }
+              },
+              {
+                "type": "control",
+                "props": {
+                  "type": "number",
+                  "id": "fourth",
+                  "caption": "Четвертая",
+                  "defaultValue": 16,
+                  "styles": {
+                    "controlWidth": "120px"
+                  }
+                }
+              },
+              {
+                "type": "control",
+                "props": {
+                  "type": "date",
+                  "id": "fifth",
+                  "caption": "Пятая",
+                  // "defaultValue": 16,
+                  "styles": {
+                    "controlWidth": "120px"
+                  }
+                }
+              },
+              {
+                "type": "control",
+                "props": {
+                  "type": "number",
+                  "id": "sixth",
+                  "caption": "Шестая космическая",
+                  "defaultValue": 16,
+                  "styles": {
+                    "controlWidth": "120px"
+                  }
+                }
+              },
+              // {
+              //   "type": "control",
+              //   "props": {
+              //     "type": "string",
+              //     "id": "response-1",
+              //     "caption": "Ответ-1",
+              //     "defaultValue": "Madagascar",
+              //     "styles": {
+              //       "controlWidth": "300px"
+              //     },
+              //     "nextLine": true,
+              //   }
+              // },
+              // {
+              //   "type": "control",
+              //   "props": {
+              //     "type": "number",
+              //     "id": "response-2",
+              //     "caption": "Ответ-2",
+              //     "defaultValue": 200,
+              //     "styles": {
+              //       "controlWidth": "300px"
+              //     },
+              //     "nextLine": true,
+              //   }
+              // },
+              {
+                "type": "panel",
+                "props": {
+                  "caption": "Параметры",
+                  "id": "h2",
+                  "multiple": true,
+                  "noHeader": true,
+                  "inRow": true,
+                  "onlyFirstTitle": true,
+                  "nextLine": true,
+                  "collapsed": true,
+                },
+                "content": [
+                  {
+                    "type": "control",
+                    "props": {
+                      "type": "string",
+                      "id": "first",
+                      "caption": "Uno",
+                      // "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                      // "required": true,
+                      "styles": {
+                        "controlWidth": "120px",
+                        "captionHeight": "1rem"
+                      }
+                    }
+                  },
+                  {
+                    "type": "control",
+                    "props": {
+                      "type": "number",
+                      "id": "second",
+                      "caption": "Dos",
+                      "defaultValue": 16,
+                      "styles": {
+                        "controlWidth": "120px",
+                        "captionHeight": "1rem"
+                      }
+                    }
+                  },
+                  {
+                    "type": "control",
+                    "props": {
+                      "type": "select",
+                      "id": "third",
+                      "caption": "Tres",
+                      "defaultValue": "omsk",
+                      "options": [
+                        {"msc": "Moscow"},
+                        {"spb": "Saint Petersburg"},
+                        {"omsk": "Omsk"},
+                        {"chel": "Chelyabinsk"}
+                      ],
+                      "styles": {
+                        "controlWidth": "120px",
+                        "captionHeight": "1rem"
+                      },
+                      "condVisibility": {
+                        "mode": "invisible",
+                        "path": "h1.1.second",
+                        "value": 17
+                      },
+                      withRequest: true
+                    }
+                  },
+                  {
+                    "type": "panel",
+                    "props": {
+                      "caption": "Параметры",
+                      "id": "h3",
+                      "multiple": true,
+                      "noHeader": true,
+                      "inRow": true,
+                      "onlyFirstTitle": true,
+                      "nextLine": true,
+                      "collapsed": true
+                    },
+                    "content": [
+                      {
+                        "type": "control",
+                        "props": {
+                          "type": "string",
+                          "id": "first",
+                          "caption": "Uno",
+                          // "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                          // "required": true,
+                          "styles": {
+                            "controlWidth": "120px",
+                            "captionHeight": "1rem"
+                          }
+                        }
+                      },
+                      {
+                        "type": "panel",
+                        "props": {
+                          "caption": "Параметры",
+                          "id": "h4",
+                          "multiple": true,
+                          "noHeader": true,
+                          "inRow": true,
+                          "onlyFirstTitle": true,
+                          "nextLine": true,
+                          "collapsed": true
+                        },
+                        "content": [
+                          {
+                            "type": "control",
+                            "props": {
+                              "type": "string",
+                              "id": "first",
+                              "caption": "Uno",
+                              // "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                              // "required": true,
+                              "styles": {
+                                "controlWidth": "120px",
+                                "captionHeight": "1rem"
+                              }
+                            }
+                          },
+                        ]
+                      },
+                    ]
+                  },
+                ]
+              },
+            ]
+        },
+        {
+          "type": "panel",
+          "props":
+            {
+              "caption": "Имя панели",
+              "id": "h9",
+              "multiple": true,
+              // "noHeader": true,
+              "inRow": true,
+              "onlyFirstTitle": true,
+              "collapsed": true,
+            }
+          ,
+          "content":
+            [
+              {
+                "type": "control",
+                "props": {
+                  "type": "string",
+                  "id": "first",
+                  "caption": "Первая космическая скорость",
+                  "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                  // "required": true,
+                  "defaultValue": "BBB",
+                  "styles": {
+                    "controlWidth": "200px"
+                  }
+                }
+              },
+              {
+                "type": "control",
+                "props": {
+                  "type": "number",
+                  "id": "second",
+                  "caption": "Вторая",
+                  "defaultValue": 16,
+                  "styles": {
+                    "controlWidth": "120px"
+                  }
+                }
+              },
+              {
+                "type": "control",
+                "props": {
+                  "type": "select",
+                  "id": "third",
+                  "caption": "Третья",
+                  "defaultValue": ["omsk", "msc"],
+                  "withRequest": {
+                    "url": "/someURL"
+                  },
+                  "multipleOptions": true,
+                  "options": [
+                    {"msc": "Moscow"},
+                    {"spb": "Saint Petersburg"},
+                    {"omsk": "Omsk"},
+                    {"chel": "Chelyabinsk"}
+                  ],
+                  "styles": {
+                    "controlWidth": "120px"
+                  },
+                  "condVisibility": {
+                    "mode": "invisible",
+                    "path": "h1.1.second",
+                    "value": 17
+                  }
+                }
+              },
+              {
+                "type": "control",
+                "props": {
+                  "type": "number",
+                  "id": "fourth",
+                  "caption": "Четвертая",
+                  "defaultValue": 16,
+                  "styles": {
+                    "controlWidth": "120px"
+                  }
+                }
+              },
+              {
+                "type": "control",
+                "props": {
+                  "type": "date",
+                  "id": "fifth",
+                  "caption": "Пятая",
+                  // "defaultValue": 16,
+                  "styles": {
+                    "controlWidth": "120px"
+                  }
+                }
+              },
+              {
+                "type": "control",
+                "props": {
+                  "type": "number",
+                  "id": "sixth",
+                  "caption": "Шестая космическая",
+                  "defaultValue": 16,
+                  "styles": {
+                    "controlWidth": "120px"
+                  }
+                }
+              },
+              // {
+              //   "type": "control",
+              //   "props": {
+              //     "type": "string",
+              //     "id": "response-1",
+              //     "caption": "Ответ-1",
+              //     "defaultValue": "Madagascar",
+              //     "styles": {
+              //       "controlWidth": "300px"
+              //     },
+              //     "nextLine": true,
+              //   }
+              // },
+              // {
+              //   "type": "control",
+              //   "props": {
+              //     "type": "number",
+              //     "id": "response-2",
+              //     "caption": "Ответ-2",
+              //     "defaultValue": 200,
+              //     "styles": {
+              //       "controlWidth": "300px"
+              //     },
+              //     "nextLine": true,
+              //   }
+              // },
+              {
+                "type": "panel",
+                "props": {
+                  "caption": "Параметры",
+                  "id": "h2",
+                  "multiple": true,
+                  "noHeader": true,
+                  "inRow": true,
+                  "onlyFirstTitle": true,
+                  "nextLine": true,
+                  "collapsed": true,
+                },
+                "content": [
+                  {
+                    "type": "control",
+                    "props": {
+                      "type": "string",
+                      "id": "first",
+                      "caption": "Uno",
+                      // "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                      // "required": true,
+                      "styles": {
+                        "controlWidth": "120px",
+                        "captionHeight": "1rem"
+                      }
+                    }
+                  },
+                  {
+                    "type": "control",
+                    "props": {
+                      "type": "number",
+                      "id": "second",
+                      "caption": "Dos",
+                      "defaultValue": 16,
+                      "styles": {
+                        "controlWidth": "120px",
+                        "captionHeight": "1rem"
+                      }
+                    }
+                  },
+                  {
+                    "type": "control",
+                    "props": {
+                      "type": "select",
+                      "id": "third",
+                      "caption": "Tres",
+                      "defaultValue": "omsk",
+                      "options": [
+                        {"msc": "Moscow"},
+                        {"spb": "Saint Petersburg"},
+                        {"omsk": "Omsk"},
+                        {"chel": "Chelyabinsk"}
+                      ],
+                      "styles": {
+                        "controlWidth": "120px",
+                        "captionHeight": "1rem"
+                      },
+                      "condVisibility": {
+                        "mode": "invisible",
+                        "path": "h1.1.second",
+                        "value": 17
+                      },
+                      withRequest: true
+                    }
+                  },
+                  {
+                    "type": "panel",
+                    "props": {
+                      "caption": "Параметры",
+                      "id": "h3",
+                      "multiple": true,
+                      "noHeader": true,
+                      "inRow": true,
+                      "onlyFirstTitle": true,
+                      "nextLine": true,
+                      "collapsed": true
+                    },
+                    "content": [
+                      {
+                        "type": "control",
+                        "props": {
+                          "type": "string",
+                          "id": "first",
+                          "caption": "Uno",
+                          // "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                          // "required": true,
+                          "styles": {
+                            "controlWidth": "120px",
+                            "captionHeight": "1rem"
+                          }
+                        }
+                      },
+                      {
+                        "type": "panel",
+                        "props": {
+                          "caption": "Параметры",
+                          "id": "h4",
+                          "multiple": true,
+                          "noHeader": true,
+                          "inRow": true,
+                          "onlyFirstTitle": true,
+                          "nextLine": true,
+                          "collapsed": true
+                        },
+                        "content": [
+                          {
+                            "type": "control",
+                            "props": {
+                              "type": "string",
+                              "id": "first",
+                              "caption": "Uno",
+                              // "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                              // "required": true,
+                              "styles": {
+                                "controlWidth": "120px",
+                                "captionHeight": "1rem"
+                              }
+                            }
+                          },
+                        ]
+                      },
+                    ]
+                  },
+                ]
+              },
+            ]
+        },
+        {
+          "type": "control",
+          "props": {
+            "type": "string",
+            "id": "first",
+            "caption": "Первая космическая скорость",
+            "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            // "required": true,
+            // "defaultValue": "",
+            "condVisibility": {
+              "mode": "invisible",
+              "path": "one.h1.0.second",
+              "value": 17
+            }
+          }
+        },
       ]
-    }
+    },
+    // {
+    //   "type": "tab",
+    //   "props": {
+    //     "id": "one+",
+    //     "caption": "Two"
+    //   },
+    //   "content" :[
+    //     {
+    //       "type": "panel",
+    //       "props":
+    //         {
+    //           "caption": "Имя панели",
+    //           "id": "h1",
+    //           "multiple": true,
+    //           // "noHeader": true,
+    //           "inRow": true,
+    //           "onlyFirstTitle": true,
+    //           // "collapsed": true,
+    //         }
+    //       ,
+    //       "content":
+    //         [
+    //           {
+    //             "type": "control",
+    //             "props": {
+    //               "type": "string",
+    //               "id": "first",
+    //               "caption": "Первая космическая скорость",
+    //               "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    //               "required": true,
+    //               // "defaultValue": "World",
+    //               "styles": {
+    //                 "controlWidth": "200px"
+    //               }
+    //             }
+    //           },
+    //           {
+    //             "type": "control",
+    //             "props": {
+    //               "type": "number",
+    //               "id": "second",
+    //               "caption": "Вторая",
+    //               "defaultValue": 16,
+    //               "styles": {
+    //                 "controlWidth": "120px"
+    //               }
+    //             }
+    //           },
+    //           {
+    //             "type": "control",
+    //             "props": {
+    //               "type": "select",
+    //               "id": "third",
+    //               "caption": "Третья",
+    //               "defaultValue": ["omsk", "msc"],
+    //               "withRequest": {
+    //                 "url": "/someURL"
+    //               },
+    //               "multipleOptions": true,
+    //               "options": [
+    //                 {"msc": "Moscow"},
+    //                 {"spb": "Saint Petersburg"},
+    //                 {"omsk": "Omsk"},
+    //                 {"chel": "Chelyabinsk"}
+    //               ],
+    //               "styles": {
+    //                 "controlWidth": "120px"
+    //               },
+    //               "condVisibility": {
+    //                 "mode": "invisible",
+    //                 "path": "h1.1.second",
+    //                 "value": 17
+    //               }
+    //             }
+    //           },
+    //           {
+    //             "type": "control",
+    //             "props": {
+    //               "type": "number",
+    //               "id": "fourth",
+    //               "caption": "Четвертая",
+    //               "defaultValue": 16,
+    //               "styles": {
+    //                 "controlWidth": "120px"
+    //               }
+    //             }
+    //           },
+    //           {
+    //             "type": "control",
+    //             "props": {
+    //               "type": "date",
+    //               "id": "fifth",
+    //               "caption": "Пятая",
+    //               // "defaultValue": 16,
+    //               "styles": {
+    //                 "controlWidth": "120px"
+    //               }
+    //             }
+    //           },
+    //           {
+    //             "type": "control",
+    //             "props": {
+    //               "type": "number",
+    //               "id": "sixth",
+    //               "caption": "Шестая космическая",
+    //               "defaultValue": 16,
+    //               "styles": {
+    //                 "controlWidth": "120px"
+    //               }
+    //             }
+    //           },
+    //           // {
+    //           //   "type": "control",
+    //           //   "props": {
+    //           //     "type": "string",
+    //           //     "id": "response-1",
+    //           //     "caption": "Ответ-1",
+    //           //     "defaultValue": "Madagascar",
+    //           //     "styles": {
+    //           //       "controlWidth": "300px"
+    //           //     },
+    //           //     "nextLine": true,
+    //           //   }
+    //           // },
+    //           // {
+    //           //   "type": "control",
+    //           //   "props": {
+    //           //     "type": "number",
+    //           //     "id": "response-2",
+    //           //     "caption": "Ответ-2",
+    //           //     "defaultValue": 200,
+    //           //     "styles": {
+    //           //       "controlWidth": "300px"
+    //           //     },
+    //           //     "nextLine": true,
+    //           //   }
+    //           // },
+    //           {
+    //             "type": "panel",
+    //             "props": {
+    //               "caption": "Параметры",
+    //               "id": "h2",
+    //               "multiple": true,
+    //               "noHeader": true,
+    //               "inRow": true,
+    //               "onlyFirstTitle": true,
+    //               "nextLine": true,
+    //               "collapsed": true,
+    //             },
+    //             "content": [
+    //               {
+    //                 "type": "control",
+    //                 "props": {
+    //                   "type": "string",
+    //                   "id": "first",
+    //                   "caption": "Uno",
+    //                   // "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    //                   // "required": true,
+    //                   "styles": {
+    //                     "controlWidth": "120px",
+    //                     "captionHeight": "1rem"
+    //                   }
+    //                 }
+    //               },
+    //               {
+    //                 "type": "control",
+    //                 "props": {
+    //                   "type": "number",
+    //                   "id": "second",
+    //                   "caption": "Dos",
+    //                   "defaultValue": 16,
+    //                   "styles": {
+    //                     "controlWidth": "120px",
+    //                     "captionHeight": "1rem"
+    //                   }
+    //                 }
+    //               },
+    //               {
+    //                 "type": "control",
+    //                 "props": {
+    //                   "type": "select",
+    //                   "id": "third",
+    //                   "caption": "Tres",
+    //                   "defaultValue": "omsk",
+    //                   "options": [
+    //                     {"msc": "Moscow"},
+    //                     {"spb": "Saint Petersburg"},
+    //                     {"omsk": "Omsk"},
+    //                     {"chel": "Chelyabinsk"}
+    //                   ],
+    //                   "styles": {
+    //                     "controlWidth": "120px",
+    //                     "captionHeight": "1rem"
+    //                   },
+    //                   "condVisibility": {
+    //                     "mode": "invisible",
+    //                     "path": "h1.1.second",
+    //                     "value": 17
+    //                   },
+    //                   withRequest: true
+    //                 }
+    //               },
+    //               {
+    //                 "type": "panel",
+    //                 "props": {
+    //                   "caption": "Параметры",
+    //                   "id": "h3",
+    //                   "multiple": true,
+    //                   "noHeader": true,
+    //                   "inRow": true,
+    //                   "onlyFirstTitle": true,
+    //                   "nextLine": true,
+    //                   "collapsed": true
+    //                 },
+    //                 "content": [
+    //                   {
+    //                     "type": "control",
+    //                     "props": {
+    //                       "type": "string",
+    //                       "id": "first",
+    //                       "caption": "Uno",
+    //                       // "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    //                       // "required": true,
+    //                       "styles": {
+    //                         "controlWidth": "120px",
+    //                         "captionHeight": "1rem"
+    //                       }
+    //                     }
+    //                   },
+    //                   {
+    //                     "type": "panel",
+    //                     "props": {
+    //                       "caption": "Параметры",
+    //                       "id": "h4",
+    //                       "multiple": true,
+    //                       "noHeader": true,
+    //                       "inRow": true,
+    //                       "onlyFirstTitle": true,
+    //                       "nextLine": true,
+    //                       "collapsed": true
+    //                     },
+    //                     "content": [
+    //                       {
+    //                         "type": "control",
+    //                         "props": {
+    //                           "type": "string",
+    //                           "id": "first",
+    //                           "caption": "Uno",
+    //                           // "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    //                           // "required": true,
+    //                           "styles": {
+    //                             "controlWidth": "120px",
+    //                             "captionHeight": "1rem"
+    //                           }
+    //                         }
+    //                       },
+    //                     ]
+    //                   },
+    //                 ]
+    //               },
+    //             ]
+    //           },
+    //         ]
+    //     }
+    //   ]
+    // }
     // {
 //   "type"
 // :
@@ -822,23 +1608,6 @@ const config = {
 // }
   ]
 
-
-// {
-//   "type": "control",
-//   "props": {
-//     "type": "string",
-//     "id": "first",
-//     "caption": "Первая космическая скорость",
-//     "hint": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-//     // "required": true,
-//     // "defaultValue": "",
-//     "condVisibility": {
-//       "mode": "invisible",
-//       "path": "h1.0.second",
-//       "value": 17
-//     }
-//   }
-// },
 // {
 //   "type": "tab",
 //   "props": {
@@ -1508,71 +2277,71 @@ const config = {
 // },
 };
 let value;
-value = {
-  one: {
-    h1: [
-      {
-        // first: "World - 2",
-        h2: [
-          {
-            h3: [
-              {
-                h4: [
-                  {
-                    first: "Hello"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        first: "World - 2",
-        second: "30",
-        h2: [
-          {
-            first: 0
-          },
-          {
-            // first: 98,
-            h3: [
-              {
-                first: 'Proverka',
-                h4: [
-                  {
-                    first: "Da"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            first: 97
-          },
-        ]
-      },
-      {
-        first: "Try",
-        second: "30",
-        h2: [
-          {
-            first: 1
-          },
-          {
-            first: 2
-          },
-          {
-            first: 3
-          },
-          {
-            first: 4
-          },
-        ]
-      }
-    ]
-  }
-};
+// value = {
+//   one: {
+//     h1: [
+//       {
+//         // first: "World - 2",
+//         h2: [
+//           {
+//             h3: [
+//               {
+//                 h4: [
+//                   {
+//                     first: "Hello"
+//                   }
+//                 ]
+//               }
+//             ]
+//           }
+//         ]
+//       },
+//       {
+//         first: "World - 2",
+//         second: "30",
+//         h2: [
+//           {
+//             first: 0
+//           },
+//           {
+//             // first: 98,
+//             h3: [
+//               {
+//                 first: 'Proverka',
+//                 h4: [
+//                   {
+//                     first: "Da"
+//                   }
+//                 ]
+//               }
+//             ]
+//           },
+//           {
+//             first: 97
+//           },
+//         ]
+//       },
+//       {
+//         first: "Try",
+//         second: "30",
+//         h2: [
+//           {
+//             first: 1
+//           },
+//           {
+//             first: 2
+//           },
+//           {
+//             first: 3
+//           },
+//           {
+//             first: 4
+//           },
+//         ]
+//       }
+//     ]
+//   }
+// };
 
 const FormContainer = (props) => {
   const [formVisible, setFormVisible] = useState(true);
@@ -1599,7 +2368,7 @@ const FormContainer = (props) => {
 
 ReactDOM.render(
   <React.StrictMode>
-    <FormContainer />
+    <FormContainer/>
   </React.StrictMode>,
   document.getElementById('root')
 );

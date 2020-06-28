@@ -1,21 +1,18 @@
 import {Checkbox, DatePicker, Input, InputNumber, Select, Tooltip} from "antd/lib/index";
 import moment from "moment/moment";
-import React, {useCallback, useEffect, useState, useMemo} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import setImmutable from "../js/common/setImmutable";
-import filterObject from "../js/common/filterObject";
 import "../styles.css";
 import getFromPath from "../js/common/getFromPath";
-import deepClone from "../js/common/deepClone";
 import checkArrayElems from "../js/checkArrayElems";
-
 
 
 const Control = React.memo((props) => {
   const {type, defaultValue, id, options} = props;
   const dateFormat = 'YYYY-MM-DD';
   const [receivedData, receivedKey] = useMemo(() => {
-    return getFromPath(props.path, props.predefinedData);
-  }, [props.path, props.predefinedData]);
+    return getFromPath(props.path, props.predefinedValues);
+  }, [props.path, props.predefinedValues]);
 
   const [value, setValue] = useState(() => {
     if (receivedData?.[receivedKey] !== undefined) return receivedData[receivedKey];
@@ -38,18 +35,16 @@ const Control = React.memo((props) => {
     return defaultValue;
     // options && defaultValue && Object.keys(options.find(i => i[defaultValue]))[0] ||
     // options && "" || defaultValue
-    });
-
-
+  });
 
 
   useEffect(() => {
-    props.setOutputData((outputData) => {
-      return setImmutable(outputData, props.path, value !== defaultValue ? value : undefined);
+    props.setModifiedOutput((modifiedOutput) => {
+      return setImmutable(modifiedOutput, props.path, value !== defaultValue ? value : undefined);
     });
 
-    props.setReflectionData((reflectionData) => {
-      return setImmutable(reflectionData, props.path,
+    props.setEntireOutput((entireOutput) => {
+      return setImmutable(entireOutput, props.path,
         value === undefined || (Array.isArray(value) && !value[0]) ? null : value);
     });
 
@@ -61,13 +56,13 @@ const Control = React.memo((props) => {
 
     return () => {
       //В выходном объекте очищает данные, если они были размонтированы.
-      props.setOutputData((outputData) => {
-        return setImmutable(outputData, props.path, undefined)
+      props.setModifiedOutput((modifiedOutput) => {
+        return setImmutable(modifiedOutput, props.path, undefined)
       });
       //Очищает данные в объекте содержащем все данные полей
-      props.setReflectionData((reflectionData) => {
+      props.setEntireOutput((entireOutput) => {
         // return filterObject(
-          return setImmutable(reflectionData, props.path, undefined)
+        return setImmutable(entireOutput, props.path, undefined)
         // );
       });
       //Удаляет объект из массива содержащего элементы controls
@@ -79,7 +74,7 @@ const Control = React.memo((props) => {
       }
 
       if (receivedData?.[receivedKey] !== undefined) {
-        props.setPredefinedData((data) => {
+        props.setPredefinedValues((data) => {
           return setImmutable(data, props.path, undefined)
         });
       }
@@ -96,18 +91,18 @@ const Control = React.memo((props) => {
     //Вторая часть условия для select с multipleOption, чтобы сверять массив value с devaultValue.
     //Третьяя часть условия необходима, так как control (если затереть поле) возвращает разные типы данных.
     if (defaultValue === data || checkArrayElems(defaultValue, data) || (defaultValue === undefined && data === null)) {
-      props.setOutputData((outputData) => {
-        return setImmutable(outputData, props.path, undefined);
+      props.setModifiedOutput((modifiedOutput) => {
+        return setImmutable(modifiedOutput, props.path, undefined);
       });
 
     } else {
-      props.setOutputData((outputData) => {
-        return setImmutable(outputData, props.path, data);
+      props.setModifiedOutput((modifiedOutput) => {
+        return setImmutable(modifiedOutput, props.path, data);
       });
     }
 
-    props.setReflectionData((reflectionData) => {
-      return setImmutable(reflectionData, props.path, data === null ? null : data);
+    props.setEntireOutput((entireOutput) => {
+      return setImmutable(entireOutput, props.path, data === null ? null : data);
     });
 
     if (props.required) {
@@ -169,14 +164,14 @@ const Control = React.memo((props) => {
     //   })
     //     .then((res) => {
     //       if (res !== "msc") return;
-    //       const [obj, key] = getFromPath(props.mainPath, props.mainData);
+    //       const [obj, key] = getFromPath(props.configPath, props.configData);
     //       console.log(obj[key]);
-    //       props.setMainData((mainData) => {
-    //         return setImmutable(mainData, props.mainPath, [...obj[key], template])
+    //       props.setConfigData((configData) => {
+    //         return setImmutable(configData, props.configPath, [...obj[key], template])
     //       })
     //     })
     // }
-  }, [setData, props.mainData]);
+  }, [setData, props.configData]);
 
 
   let control;
