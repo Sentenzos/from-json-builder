@@ -10,19 +10,17 @@ import checkArrayElems from "../js/checkArrayElems";
 const Control = React.memo((props) => {
   const {type, defaultValue, id, options} = props;
   const dateFormat = 'YYYY-MM-DD';
-  const [receivedData, receivedKey] = useMemo(() => {
+  const [predefinedData, predefinedKey] = useMemo(() => {
     return getFromPath(props.path, props.predefinedValues);
   }, [props.path, props.predefinedValues]);
 
   const [value, setValue] = useState(() => {
-    if (receivedData?.[receivedKey] !== undefined) return receivedData[receivedKey];
-    //Если true, значит элемент select и value необходимо задать особым образом
+    const thereIsPredefinedData = predefinedData?.[predefinedKey] !== undefined;
+    if (thereIsPredefinedData) return predefinedData[predefinedKey];
+
     if (options && defaultValue) {
       return defaultValue
     }
-    // if (options && defaultValue) {
-    //   return Object.keys(options.find(i => i[defaultValue]))[0]
-    // }
 
     if (options && !defaultValue) {
       if (props.multipleOptions) {
@@ -33,14 +31,13 @@ const Control = React.memo((props) => {
     }
 
     return defaultValue;
-    // options && defaultValue && Object.keys(options.find(i => i[defaultValue]))[0] ||
-    // options && "" || defaultValue
   });
 
 
   useEffect(() => {
     props.setModifiedOutput((modifiedOutput) => {
-      return setImmutable(modifiedOutput, props.path, value !== defaultValue ? value : undefined);
+      return setImmutable(modifiedOutput, props.path,
+        value !== defaultValue ? value : undefined);
     });
 
     props.setEntireOutput((entireOutput) => {
@@ -54,26 +51,22 @@ const Control = React.memo((props) => {
       });
     }
 
+    //Очистка данных при размонтировании
     return () => {
-      //В выходном объекте очищает данные, если они были размонтированы.
       props.setModifiedOutput((modifiedOutput) => {
         return setImmutable(modifiedOutput, props.path, undefined)
       });
-      //Очищает данные в объекте содержащем все данные полей
       props.setEntireOutput((entireOutput) => {
-        // return filterObject(
         return setImmutable(entireOutput, props.path, undefined)
-        // );
       });
-      //Удаляет объект из массива содержащего элементы controls
-      //со свойством required.
       if (props.required) {
         props.setRequiredControls((arr) => {
           return [...arr.filter(i => i.path !== props.path)]
         });
       }
 
-      if (receivedData?.[receivedKey] !== undefined) {
+      const thereIsPredefinedData = predefinedData?.[predefinedKey] !== undefined;
+      if (thereIsPredefinedData) {
         props.setPredefinedValues((data) => {
           return setImmutable(data, props.path, undefined)
         });
@@ -84,17 +77,19 @@ const Control = React.memo((props) => {
 
   const setData = useCallback((data) => {
     setValue(data);
-    //Если это select с multipleOptions и у него не выбрана ни одна опция, то сброс на null для корректного
-    //отображения.
-    if (Array.isArray(data) && !data[0]) data = null;
-    //Установить значение на undefined (далее произойдет очистка свойств с undefined значениями).
-    //Вторая часть условия для select с multipleOption, чтобы сверять массив value с devaultValue.
-    //Третьяя часть условия необходима, так как control (если затереть поле) возвращает разные типы данных.
-    if (defaultValue === data || checkArrayElems(defaultValue, data) || (defaultValue === undefined && data === null)) {
+
+    const isEmptyMultipleSelect = Array.isArray(data) && !data[0];
+    if (isEmptyMultipleSelect) data = null;
+
+    const outputValueMustBeReset = defaultValue === data ||
+      checkArrayElems(defaultValue, data) ||
+      (defaultValue === undefined && data === null);
+
+    if (outputValueMustBeReset) {
+      //Если задать undefined, то свойство в дальнейшем удалится.
       props.setModifiedOutput((modifiedOutput) => {
         return setImmutable(modifiedOutput, props.path, undefined);
       });
-
     } else {
       props.setModifiedOutput((modifiedOutput) => {
         return setImmutable(modifiedOutput, props.path, data);
@@ -133,7 +128,6 @@ const Control = React.memo((props) => {
   }, [setData]);
 
   const handleSelect = useCallback((data) => {
-    let val;
     setData(data);
     // if (props.withRequest) {
     //

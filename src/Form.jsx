@@ -116,6 +116,7 @@ const Form = React.memo((props) => {
                              inRow={inRow}
                              predefinedValues={predefinedValues}
                              setPredefinedValues={setPredefinedValues}
+                             elemType={contentArray[i].type}
           />;
 
           if (visibilityStatus(contentArray[i], entireOutput)) {
@@ -154,8 +155,7 @@ const Form = React.memo((props) => {
           } else {
             element =
               <Tabs defaultActiveKey={1}
-              //Ключ временный. Если tab будут добавляться/удаляться, то следует поменять.
-                            key={`${contentArray[i].type}.${contentArray[i].props.id}`}>
+                    key={`${contentArray[i].type}.${contentArray[i].props.id}`}>
               {
                 [...tabPanes]
               }
@@ -166,6 +166,7 @@ const Form = React.memo((props) => {
           }
         }
       }
+
       return elements;
 
     }, [configData, entireOutput]);
@@ -174,17 +175,19 @@ const Form = React.memo((props) => {
   const handleOkBtn = useCallback(() => {
     let entireOutputFiltered;
     let modifiedOutputFiltered;
+    const outputFormat = props.config.props.outputFormat;
 
-    if (props.config.props.outputFormat === "entire") {
+    if (outputFormat === "entire") {
       entireOutputFiltered = filterObject(entireOutput) || {};
 
-    } else if (props.config.props.outputFormat === "modified") {
+    } else if (outputFormat === "modified") {
       modifiedOutputFiltered = filterObject(modifiedOutput) || {};
     }
 
     props.onOk(entireOutputFiltered || modifiedOutputFiltered);
 
-  }, [modifiedOutput, entireOutput, props.config, props.onOk, configData]);
+  }, [modifiedOutput, entireOutput,
+    props.config, props.onOk, configData]);
 
 
   const handleCancelBtn = useCallback(() => {

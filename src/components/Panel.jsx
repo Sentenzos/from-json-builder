@@ -1,4 +1,4 @@
-import React, {useCallback, useState, useEffect, useMemo, useLayoutEffect} from "react";
+import React, {useCallback, useLayoutEffect, useMemo, useState} from "react";
 import {Button, Card} from "antd";
 import deepClone from "../js/common/deepClone";
 import getFromPath from "../js/common/getFromPath";
@@ -26,18 +26,16 @@ const Panel = React.memo((props) => {
   }, [props.content, props.path,
     props.configPath, props.isFirst, props.onlyFirstTitle, props.inRow, props.createElement]);
 
-
-
   //Сработает только при первом рендере компонента.
   //Если в массиве есть элементы control чье значение берется из объекта predefinedValues (предустановленные данные),
   //то предотвратить сокрытие
   const controlWithValue = useMemo(() => {
     return elements.some((item, index) => {
-      if (!item) return ;
-      if (item.props.elemType !== "panel") {
-        const [obj, key] = getFromPath(item.props.path, props.predefinedValues);
-        if (!obj) return;
-        if (obj[key] !== undefined) {
+      if (!item) return;
+      if (item.props.elemType === "control") {
+        const [predefinedValue, key] = getFromPath(item.props.path, props.predefinedValues);
+        if (!predefinedValue) return;
+        if (predefinedValue[key] !== undefined) {
           return true;
         }
       }
@@ -70,30 +68,27 @@ const Panel = React.memo((props) => {
   //то этот компонент необходимо скрыть (если и другие условия тоже true)
   //а так же сделать вызов на сокрытие родителя этого компонента
   useLayoutEffect(() => {
-      if (forceHide && !controlWithValue && props.isSingle) {
-        if (preventHide) return;
+    if (forceHide && !controlWithValue && props.isSingle) {
+      if (preventHide) return;
 
-        if (props.collapsed) {
-          toggleHide(true);
-        }
-
-        if (props.forceHideParent) {
-          props.forceHideParent(true);
-        }
+      if (props.collapsed) {
+        toggleHide(true);
       }
+
+      if (props.forceHideParent) {
+        props.forceHideParent(true);
+      }
+    }
   }, [forceHide]);
 
   const addPanel = useCallback(() => {
-    //Разбор строки path.
     let path = props.configPath.split('.');
-    //Извлечение оттуда последнего ключа (index) и увеличение на единицу
-    //для корректного добавления элемента по индексу
     let index = +path.pop() + 1;
     path = path.join('.');
 
-    //Получение ссылки на данный объект panel и создание его копии.
     const [obj, key] = getFromPath(props.configPath, props.configData);
-    const panelClone = deepClone(obj[key]);
+    const panel = obj[key];
+    const panelClone = deepClone(panel);
     //У копии должен быть сброшен keyId.
     panelClone._keyId = undefined;
     //Установка свойства _copy для дальнейшей очиски.
@@ -103,12 +98,12 @@ const Panel = React.memo((props) => {
 
     props.setConfigData(configData => {
       //Извлечение ссылки на массив объектов
-      const [obj, key] = getFromPath(path, props.configData);
-      let array = key ? obj[key] : obj;
+      const [content, key] = getFromPath(path, props.configData);
+      let contentArray = key ? content[key] : content;
 
       return setImmutable(configData, path,
         //вернет поверхностную копию массива obj[key] с новым элементом panelClone по индексу index
-        addByIndex(array, panelClone, index));
+        addByIndex(contentArray, panelClone, index));
     })
   }, [props.configPath, props.configData]);
 
@@ -119,11 +114,13 @@ const Panel = React.memo((props) => {
     path = path.join('.');
 
     props.setConfigData(configData => {
-      const [obj, key] = getFromPath(path, props.configData);
-      let array = key ? obj[key] : obj;
+      const [content, key] = getFromPath(path, props.configData);
+      let contentArray = key ? content[key] : content;
 
-      return setImmutable(configData, path,
-        [...array.filter((item) => item._keyId !== props.keyId)]);
+      const arrayWithoutThisPanel =
+        contentArray.filter((panel) => panel._keyId !== props.keyId);
+
+      return setImmutable(configData, path, arrayWithoutThisPanel);
     })
   }, [props.configPath, props.configData, props.keyId]);
 
@@ -134,21 +131,26 @@ const Panel = React.memo((props) => {
 
 
   const showPanel = useCallback(() => {
-    let path = props.configPath.split('.');
-    let index = +path.pop();
-    path = path.join('.');
+    //Очистка от всех элементов-копий перед отображением
+    {
+      let path = props.configPath.split('.');
+      let index = +path.pop();
+      path = path.join('.');
 
-    const [obj, key] = getFromPath(props.configPath, props.configData);
-    const panelClone = deepClone(obj[key]);
-    deleteCopies(panelClone);
+      const [obj, key] = getFromPath(props.configPath, props.configData);
+      const panel = obj[key];
+      const panelClone = deepClone(panel);
+      deleteCopies(panelClone);
 
-    props.setConfigData(configData => {
-      const [obj, key] = getFromPath(path, props.configData);
-      let array = key ? obj[key] : obj;
+      props.setConfigData(configData => {
+        const [content, key] = getFromPath(path, props.configData);
+        let contentArray = key ? content[key] : content;
 
-      return setImmutable(configData, path,
-        addByIndex([...array.filter((item) => item._keyId !== props.keyId)], panelClone, index));
-    });
+        return setImmutable(configData, path,
+          //Вставка массива с клонированным элементом panel очищенным от вложенных копий других элементов.
+          addByIndex(contentArray.filter((item) => item._keyId !== props.keyId), panelClone, index));
+      });
+    }
 
     toggleHide(false);
     setPreventHide(true);
@@ -175,7 +177,7 @@ const Panel = React.memo((props) => {
         <Card title={
           <div>{props.caption}
             <i onClick={(props.isSingle && hidePanel) || removePanel}
-                            className="fa fa-trash form-editor__fa-trash"
+               className="fa fa-trash form-editor__fa-trash"
             />
           </div>
         } size="small" style={{marginTop: "1rem"}}>

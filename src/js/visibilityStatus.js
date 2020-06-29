@@ -8,16 +8,19 @@ function visibilityStatus(elem, data) {
   }
   //Извлечение значения.
   const [object, key] = getFromPath(elem.props.condVisibility.path, data);
+  const condVisibilityMode = elem.props.condVisibility.mode;
+  const condVisibilityValue = elem.props.condVisibility.value;
 
-  if (elem.props.condVisibility.mode === "visible") {
-    if (object?.[key] === elem.props.condVisibility.value) {
+
+  if (condVisibilityMode === "visible") {
+    if (object?.[key] === condVisibilityValue) {
       return true
     } else {
       return undefined
     }
   }
-  if (elem.props.condVisibility.mode === "invisible") {
-    if (object?.[key] !== elem.props.condVisibility.value) {
+  if (condVisibilityMode === "invisible") {
+    if (object?.[key] !== condVisibilityValue) {
       return true
     } else {
       return undefined

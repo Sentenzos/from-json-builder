@@ -49,17 +49,17 @@ const addMissingElements = (dataJSON, predefinedValues) => {
         //Если ключ число, то итерация цикла работает с элементом со свойством multiple.
         //Сама число означает что элемент клон и какой он по счету.
       } else {
-        //Сколько должнл быть элементов клонов.
+        //Сколько должно быть элементов клонов.
         let haveToElements = +arrPath[i] + 1;
         //Сколько элементов клонов на данный момент.
         let thereAreElements = data.filter(item => item.props.id === arrPath[i - 1]);
         //Сколько не хватает.
-        let lack = haveToElements - thereAreElements.length;
+        let lackElements = haveToElements - thereAreElements.length;
 
         //Клонирует оригинальный объект lack раз и добавляет в массив.
-        if (lack > 0) {
+        if (lackElements > 0) {
           let arr = [];
-          for (let k = 0; k < lack; k++) {
+          for (let k = 0; k < lackElements; k++) {
             const clone = deepClone(originalObjects[thisPath]);
             clone._copy = true;
             clone._keyId = undefined;
